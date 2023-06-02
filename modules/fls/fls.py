@@ -1,8 +1,7 @@
 import subprocess
-import io
 from utils.utils import disk_name, get_start_offset
 
-def run(disk_path, out_path):
+def run(disk_path, out_path, mnt_pts):
     start_offset = get_start_offset(disk_path)
 
     # List all files

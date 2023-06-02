@@ -36,11 +36,18 @@ def get_start_offset(disk_path):
 
         return int(f.readlines()[cp_max].rstrip())
     
-def mount_point(disk_path):
-    if not os.path.isdir("mnt_pts"):
-        os.mkdir("mnt_pts")
+def mount_point(disk_path, mnt_pts):
+    if not os.path.isdir(mnt_pts):
+        os.mkdir(mnt_pts)
         
-    if not os.path.ismount("mnt_pts"):
+    if not os.path.ismount(mnt_pts):
         start_offset = get_start_offset(disk_path)
-        req = f"mount -o loop,ro,noexec,noload,offset=$((512*{start_offset})) {disk_path} mnt_pts"
-        subprocess.Popen(req, stdout=subprocess.PIPE, shell=True)
+        req = f"mount -o loop,ro,noexec,noload,offset=$((512*{start_offset})) {disk_path} {mnt_pts}"
+        p = subprocess.Popen(req, stdout=subprocess.PIPE, shell=True)
+        p.wait()
+
+def unmount_disk(mnt_pts):
+    if os.path.ismount(mnt_pts):
+        req = ["umount", mnt_pts]
+        p = subprocess.Popen(req, stdout=subprocess.PIPE)
+        p.wait()

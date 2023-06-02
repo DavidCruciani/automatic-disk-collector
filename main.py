@@ -1,6 +1,8 @@
 import os
 import argparse
-import configparser
+import importlib.util
+import sys
+from utils.utils import unmount_disk
 
 
 parser = argparse.ArgumentParser()
@@ -22,12 +24,24 @@ for i in range(0, len(ignored_modules)):
     ignored_modules[i] = ignored_modules[i].rstrip()
 
 
+mnt_pts = os.path.join(os.getcwd(), "mnt_pts")
+
+
 if os.path.isfile(args.disk_path):
-    for module in os.listdir(os.getcwd()):
-        if os.path.isdir(module) and not module in ignored_modules:
+    modules_path = os.path.join(os.getcwd(), "modules")
+    for module in os.listdir(modules_path):
+        full_module_path = os.path.join(modules_path, module)
+        if os.path.isdir(full_module_path) and not module in ignored_modules:
             print(module)
-            test_mod = __import__(module)
-            test_mod.run(args.disk_path, args.out_path)
+            spec = importlib.util.spec_from_file_location(module, os.path.join(full_module_path, module + ".py"))
+            foo = importlib.util.module_from_spec(spec)
+            sys.modules[module] = foo
+            spec.loader.exec_module(foo)
+            try:
+                foo.run(args.disk_path, args.out_path, mnt_pts=mnt_pts)
+            except:
+                continue
 else:
     print("[-] Image of the disk not found")
 
+unmount_disk(mnt_pts)
