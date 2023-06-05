@@ -3,7 +3,7 @@ import sys
 import shutil
 import pathlib
 import importlib
-from utils.utils import mount_point, unmount_disk
+from utils.utils import mount_point, load_modules
 
 def run(disk_path, out_path, mnt_pts):
     mount_point(disk_path, mnt_pts)
@@ -31,14 +31,16 @@ def run(disk_path, out_path, mnt_pts):
         ignored_modules[i] = ignored_modules[i].rstrip()
 
 
-    modules_path = os.path.join(pathlib.Path(__file__).parent.resolve(), "modules")
-    for module in os.listdir(modules_path):
-        full_module_path = os.path.join(modules_path, module)
-        if os.path.isdir(full_module_path) and not module in ignored_modules:
-            print(module)
-            spec = importlib.util.spec_from_file_location(module, os.path.join(full_module_path, module + ".py"))
-            foo = importlib.util.module_from_spec(spec)
-            sys.modules[module] = foo
-            spec.loader.exec_module(foo)
-            foo.run(disk_path, out_path)
+    load_modules(current_folder=pathlib.Path(__file__).parent.resolve(), ignored_modules=ignored_modules, disk_path=disk_path, out_path=out_path)
+
+    # modules_path = os.path.join(pathlib.Path(__file__).parent.resolve(), "modules")
+    # for module in os.listdir(modules_path):
+    #     full_module_path = os.path.join(modules_path, module)
+    #     if os.path.isdir(full_module_path) and not module in ignored_modules:
+    #         print(module)
+    #         spec = importlib.util.spec_from_file_location(module, os.path.join(full_module_path, module + ".py"))
+    #         foo = importlib.util.module_from_spec(spec)
+    #         sys.modules[module] = foo
+    #         spec.loader.exec_module(foo)
+    #         foo.run(disk_path, out_path)
 

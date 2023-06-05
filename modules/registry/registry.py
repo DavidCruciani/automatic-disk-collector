@@ -1,6 +1,7 @@
 import os
 import shutil
-from utils.utils import mount_point, unmount_disk
+import pathlib
+from utils.utils import mount_point, load_modules
 
 def run(disk_path, out_path, mnt_pts):
     mount_point(disk_path, mnt_pts)
@@ -24,11 +25,22 @@ def run(disk_path, out_path, mnt_pts):
     for user in os.listdir(user_path):
         loc_user_path = os.path.join(user_path, user)
         if os.path.isdir(loc_user_path):
-            try:
-                registry_out_path_user = os.path.join(registry_out_path, user)
-                if not os.path.isdir(registry_out_path_user):
-                    os.mkdir(registry_out_path_user)
-                shutil.copy2(f"{loc_user_path}/NTUSER.DAT", registry_out_path_user)
-            except:
-                continue
+            if os.path.isfile(f"{loc_user_path}/NTUSER.DAT"):
+                try:
+                    registry_out_path_user = os.path.join(registry_out_path, user)
+                    if not os.path.isdir(registry_out_path_user):
+                        os.mkdir(registry_out_path_user)
+                    shutil.copy2(f"{loc_user_path}/NTUSER.DAT", registry_out_path_user)
+                except Exception as e:
+                    continue
 
+    try:
+        with open("ignored_modules", "r") as read_file:
+            ignored_modules = read_file.readlines()
+    except:
+        ignored_modules = []
+
+    for i in range(0, len(ignored_modules)):
+        ignored_modules[i] = ignored_modules[i].rstrip()
+
+    load_modules(current_folder=pathlib.Path(__file__).parent.resolve(), ignored_modules=ignored_modules, disk_path=disk_path, out_path=out_path)
