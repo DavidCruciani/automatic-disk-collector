@@ -64,4 +64,8 @@ def load_modules(current_folder, ignored_modules, disk_path, out_path):
             foo = importlib.util.module_from_spec(spec)
             sys.modules[module] = foo
             spec.loader.exec_module(foo)
-            foo.run(disk_path, out_path)
+            try:
+                foo.run(disk_path, out_path)
+            except Exception as e:
+                print(e)
+                continue
